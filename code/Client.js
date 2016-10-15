@@ -80,8 +80,9 @@ class Client extends EventEmitter {
                 data = Zlib.inflateSync(data).toString();
                 var message = JSON.parse(data);
                 // do something with message
-                if(message.s)
-                    this.seq = message.s;
+                if(message.s) {
+                    this.sequence = message.s;
+                }
     		switch(message.t) {
                 case "READY":
                 	self.emit("botReady")
@@ -90,7 +91,7 @@ class Client extends EventEmitter {
                     this.heartbeatInterval = setInterval(()=>{
                         ws.send(JSON.stringify({
                             op: 1,
-                            d: this.seq
+                            d: this.sequence
                         }))
                     }, message.d.heartbeat_interval);
                 break;
