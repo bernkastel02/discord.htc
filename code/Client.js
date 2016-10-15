@@ -82,7 +82,7 @@ class Client extends EventEmitter {
                 // do something with message
                 if(message.s) {
                     this.sequence = message.s;
-                } // probs fixed
+                } // probs fixed..?
     		switch(message.t) {
                 case "READY":
                 	self.emit("botReady")
