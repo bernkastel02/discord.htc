@@ -11,12 +11,12 @@ You will need node.js 4+ to run the library
 ####Main Version
 
 ```
-npm install teamcorox/discord.htc
+npm install discord.htc
 ```
 ####Development Version (MORE BUGS)
 
 ```
-npm install teamcorox/discord.htc#dev
+npm install nekonez/discord.htc#dev
 ```
 
 ###Ping Example
