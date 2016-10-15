@@ -11,6 +11,12 @@ You will need node.js 4+ to run the library
 npm install discord.htc
 ```
 
+or saving to your `package.json`...
+
+```
+npm install --save discord.htc
+```
+
 ###Ping Example
 
 ```js
