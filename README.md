@@ -30,19 +30,14 @@ bot.on('createdMessage', (message) => {
 
 bot.connect()
 ```
-
-##Progress on the Lib!
-
-- [x] Client Struct
-- [x] Message Struct
-- [x] User Struct
-- [x] Channel Struct
-- [ ] Guild Struct
-
 ##Contributing
 When contributing to the library, be it a direct commit or a pull request, please make sure that your code is formatted properly according to the [standard js](http://standardjs.com/) styleguide to keep consistancy throughout the library.
 
 ##Discord Server
 
 https://discord.gg/hbKjYTu
+
+##NPM Package
+
+https://www.npmjs.com/package/discord.htc
 
