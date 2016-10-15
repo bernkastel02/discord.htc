@@ -5,7 +5,7 @@
 You will need node.js 4+ to run the library
 
 
-####How to install
+####NPM Install Command
 
 ```
 npm install discord.htc
