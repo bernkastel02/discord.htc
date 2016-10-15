@@ -51,4 +51,3 @@ When contributing to the library, be it a direct commit or a pull request, pleas
 
 https://discord.gg/hbKjYTu
 
-###discord.htc &copy; TeamCoroX 2016
