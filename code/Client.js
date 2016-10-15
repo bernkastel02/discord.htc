@@ -646,6 +646,17 @@ class Client extends EventEmitter {
         })
     }
     
+	leaveGuild(serverID) {
+		let options = {
+    		method: 'DELETE',
+			uri: `${url}/users/@me/guilds/${serverID}`,
+    		headers: {
+        		'Authorization': `Bot ${this.token}`
+    		}
+		};	
+		return requestp(options).catch(function (err) { return new Promise.reject(new Error("Somehow an error was made!")); });
+	}
+    
 }
 
 
