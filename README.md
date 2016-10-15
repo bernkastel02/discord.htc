@@ -5,15 +5,10 @@
 You will need node.js 4+ to run the library
 
 
-####Main Version
+####How to install
 
 ```
 npm install discord.htc
-```
-####Development Version (MORE BUGS)
-
-```
-npm install nekonez/discord.htc#dev
 ```
 
 ###Ping Example
