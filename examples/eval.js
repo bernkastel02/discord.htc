@@ -5,9 +5,6 @@ var token = " "
 // Do not touch code down here!
 var DHTC = require('discord.htc')
 var bot = new DHTC(token)
-
-var prefix = ("!"), ownerID = ("")
- 
 bot.on("botReady", () => {
   console.log("Ready!")
 });
