@@ -11,7 +11,7 @@ bot.on("botReady", () => {
  
 bot.on("createdMessage", (message) => {
   if (message.author.id == (ownerID)) {
-    if (message.content.toLowerCase.startsWith(`${prefix}eval `)) {
+    if (message.content.toLowerCase().startsWith(`${prefix}eval `)) {
       let args = message.content.split(`${prefix}eval `).join("")
       try {
         var evald = eval(args);
