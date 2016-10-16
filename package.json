@@ -1,7 +1,7 @@
 {
   "name": "discord.htc",
-  "version": "0.1.16",
-  "description": "A Discord library utilizing JS.",
+  "version": "0.1.14",
+  "description": "A JavaScript Handler made for Discord utilizing its API",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
