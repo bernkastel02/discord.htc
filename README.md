@@ -44,4 +44,3 @@ https://discord.gg/hbKjYTu
 ##NPM Package
 
 https://www.npmjs.com/package/discord.htc
-
