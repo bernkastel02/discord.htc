@@ -36,8 +36,6 @@ bot.on('createdMessage', (message) => {
 
 bot.connect()
 ```
-##Contributing
-When contributing to the library, be it a direct commit or a pull request, please make sure that your code is formatted properly according to the [standard js](http://standardjs.com/) styleguide to keep consistancy throughout the library.
 
 ##Discord Server
 
