@@ -321,7 +321,7 @@ class Client extends EventEmitter {
     		method: 'DELETE',
 			uri: `${url}/guilds/${serverID}/roles/${roleID}`,
     		headers: {
-        		'Authorization': `${this.token}`
+        		'Authorization': `Bot ${this.token}`
     		}
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission to delete role!")); });
@@ -522,7 +522,7 @@ class Client extends EventEmitter {
     		method: 'GET',
 			uri: `${url}/guilds/${serverID}/bans`,
     		headers: {
-        		'Authorization': `${this.token}`
+        		'Authorization': `Bot ${this.token}`
     		}
 		};	// return new Promise.reject(new Error("You don't have test invite!"));
 		return requestp(options).then((userArray) => { return userArray; }).catch(function (err) { return new Promise.reject(new Error("You don't have test bans")); });
@@ -689,6 +689,17 @@ class Client extends EventEmitter {
     	    }))
 		}
 		*/
+	}
+	
+	get self() {
+		let options = {
+    		method: 'GET',
+			uri: `${url}/users/@me`,
+    		headers: {
+        		'Authorization': `Bot ${this.token}`
+    		}
+		};
+		return requestp(options).then((user) => { return this}).catch(function (err) { return new Promise.reject(new Error("Could not GET user information!")); });
 	}
     
 }
