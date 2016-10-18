@@ -7,6 +7,7 @@
 
 <a href="https://www.npmjs.com/package/discord.htc"><img src="https://img.shields.io/npm/v/discord.htc.svg?style=flat-square" alt="npm version" height="18"></a>
 <br>
+</p>
 
 
 ##How to install
