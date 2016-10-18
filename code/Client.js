@@ -1,8 +1,6 @@
 'use strict';
 const WebSocket = require("ws"), request = require('request'), Zlib = require("zlib"), requestp = require('request-promise-any'), fs = require('fs')
-const ws = new WebSocket('wss://gateway.discord.gg/')
 const dgram = require('dgram');
-
 
 
 var EventEmitter, Promise;
@@ -47,6 +45,7 @@ class Client extends EventEmitter {
         this.isReady = false;
     	this.game = "";
     	this.startT = 0;
+		this.ws = new WebSocket('wss://gateway.discord.gg/?v=6')
 		
 		request.get({ url: `${url}/gateway?encoding=json&v=6` }).on('response', function(response) {  })
     }
@@ -55,27 +54,12 @@ class Client extends EventEmitter {
      * The Connection client
      */
 	connect() {
-        var self = this;
-		ws.on('open', function open() {
-    		ws.send(JSON.stringify({
-	            "op": 2,
-	            "d": {
-		            large_theshold: 250,
-		            compress: true,
-		            properties: {
-			            $os: process ? process.platform : 'windows',
-			            $browser: "discord.htc",
-			            $device: "discord.htc",
-			            $referrer: '',
-			            $referring_domain: ''
-		            },
-		            token: self.token
-	            }
-            }))
+		this.ws.on('open', () => {
+    		
 		});
 		
 		
-		ws.on("message", function(data, flags) {
+		this.ws.on("message", (data, flags) => {
             if (flags.binary)
                 data = Zlib.inflateSync(data).toString();
                 var message = JSON.parse(data);
@@ -83,101 +67,119 @@ class Client extends EventEmitter {
                 if(message.s) {
                     this.sequence = message.s;
                 } // probs fixed..? commit 3
-    		switch(message.t) {
-                case "READY":
-                	self.emit("botReady")
-                	this.isReady = true;
-                	this.startT = Date.now();
+            switch(message.op) {
+                case 10:
+                    this.ws.send(JSON.stringify({
+        	            "op": 2,
+        	            "d": {
+        		            large_theshold: 250,
+        		            compress: true,
+        		            properties: {
+        			            $os: process ? process.platform : 'windows',
+        			            $browser: "discord.htc",
+        			            $device: "discord.htc",
+        			            $referrer: '',
+        			            $referring_domain: ''
+        		            },
+        		            token: this.token
+        	            }
+                    }))
                     this.heartbeatInterval = setInterval(()=>{
-                        ws.send(JSON.stringify({
+                        this.ws.send(JSON.stringify({
                             op: 1,
                             d: this.sequence
                         }))
                     }, message.d.heartbeat_interval);
-                break;
-                
-                case "MESSAGE_CREATE":
-                	self.emit("createdMessage", message.d)
-                	this.author = new User(message.d.author);
-                break;
-                case "MESSAGE_DELETE":
-                	self.emit("deletedMessage", message.d)
-                break;
-                
-                case "GUILD_CREATE":
-                	self.emit("guildAdd", message.d)
-                	this.guild = new Guild(message.d)
-                break;
-                case "GUILD_UPDATE":
-                	self.emit("guildUpdate", message.d)
-                	this.guild = new Guild(message.d)
-                break;
-                case "GUILD_DELETE":
-                	self.emit("guildDelete", message.d)
-                break;
-                case "GUILD_BAN_ADD":
-                	self.emit("guildBanAdd", message.d)
-                break;
-                case "GUILD_BAN_REMOVE":
-                	self.emit("guildBanAdd", message.d)
-                break;
-                case "GUILD_ROLE_CREATE":
-                	self.emit("guildRoleCreate", message.d)
-                	this.role = new Role(message.d.role)
-                break;
-                case "GUILD_ROLE_UPDATE":
-                	self.emit("guildRoleUpdate", message.d)
-                	this.role = new Role(message.d.role)
-                break;
-                case "GUILD_ROLE_DELETE":
-                	self.emit("guildRoleDelete", message.d)
-            	break;
-            	case "GUILD_MEMBER_ADD":
-            		self.emit("guildMemberJoin", message.d)
-            	break;
-            	case "GUILD_MEMBER_UPDATE":
-            		self.emit("guildMemberUpdate", message.d)
-            	break;
-            	case "GUILD_MEMBER_REMOVE":
-            		self.emit("guildMemberLeave", message.d)
-            	break;
-            		
-            	
-            	case "CHANNEL_CREATE":
-            		self.emit("channelCreate", message.d)
-            	break;
-            	case "CHANNEL_UPDATE":
-            		self.emit("channelUpdate", message.d)
-            	break;
-            	case "CHANNEL_DELETE":
-            		self.emit("channelDelete", message.d)
-            	break;
-            	
-                case "VOICE_SERVER_UPDATE":
-                	self.emit("voiceGuildChange", message.d)
-                	this.voice = new VoiceServer(message.d)
-                break;
-                
-                case "TYPING_START":
-                	self.emit("userTyping", message.d)
-                break;
-                
-                case "RESUMED":
-                	self.emit("resumed", message.d)
-                break;
-                
-                case "PRESENCE_UPDATE":
-                	self.emit("presenceUpdate", message.d)
-                break;
-                case "PRESENCE_UPDATE":
-                	self.emit("presenceUpdate", message.d)
-                break;
+                    break;
+                    
+                case 0:
+                    switch(message.t) {
+                    case "READY":
+                    	this.emit("botReady")
+                    	this.isReady = true;
+                    	this.startT = Date.now();
+                    break;
+                    
+                    case "MESSAGE_CREATE":
+                    	this.emit("createdMessage", message.d)
+                    	this.author = new User(message.d.author);
+                    break;
+                    case "MESSAGE_DELETE":
+                    	this.emit("deletedMessage", message.d)
+                    break;
+                    case "MESSAGE_UPDATE":
+                        this.emit("messageUpdated", message.d)
+                    break;
+                    
+                    case "GUILD_CREATE":
+                    	this.emit("guildAdd", message.d)
+                    	this.guild = new Guild(message.d)
+                    break;
+                    case "GUILD_UPDATE":
+                    	this.emit("guildUpdate", message.d)
+                    	this.guild = new Guild(message.d)
+                    break;
+                    case "GUILD_DELETE":
+                    	this.emit("guildDelete", message.d)
+                    break;
+                    case "GUILD_BAN_ADD":
+                    	this.emit("guildBanAdd", message.d)
+                    break;
+                    case "GUILD_BAN_REMOVE":
+                    	this.emit("guildBanAdd", message.d)
+                    break;
+                    case "GUILD_ROLE_CREATE":
+                    	this.emit("guildRoleCreate", message.d)
+                    	this.role = new Role(message.d.role)
+                    break;
+                    case "GUILD_ROLE_UPDATE":
+                    	this.emit("guildRoleUpdate", message.d)
+                    	this.role = new Role(message.d.role)
+                    break;
+                    case "GUILD_ROLE_DELETE":
+                    	this.emit("guildRoleDelete", message.d)
+                	break;
+                	case "GUILD_MEMBER_ADD":
+                		this.emit("guildMemberJoin", message.d)
+                	break;
+                	case "GUILD_MEMBER_UPDATE":
+                		this.emit("guildMemberUpdate", message.d)
+                	break;
+                	case "GUILD_MEMBER_REMOVE":
+                		this.emit("guildMemberLeave", message.d)
+                	break;
+                		
                 	
+                	case "CHANNEL_CREATE":
+                		this.emit("channelCreate", message.d)
+                	break;
+                	case "CHANNEL_UPDATE":
+                		this.emit("channelUpdate", message.d)
+                	break;
+                	case "CHANNEL_DELETE":
+                		this.emit("channelDelete", message.d)
+                	break;
+                	
+                    case "VOICE_SERVER_UPDATE":
+                    	this.emit("voiceGuildChange", message.d)
+                    	this.voice = new VoiceServer(message.d)
+                    break;
+                    
+                    case "TYPING_START":
+                    	this.emit("userTyping", message.d)
+                    break;
+                    
+                    case "RESUMED":
+                    	this.emit("resumed", message.d)
+                    break;
+                    
+                    case "PRESENCE_UPDATE":
+                    	this.emit("presenceUpdate", message.d)
+                    break;
+                    	
+                }
+                break;
             }
-		});
-		
-		ws.on('close', function close() {
-			console.log('disconnected');
 		});
 	}
 	
@@ -234,7 +236,7 @@ class Client extends EventEmitter {
 		if (botGame !== undefined) {
 			this.game = botGame;
 		}
-		ws.send(JSON.stringify({
+		this.ws.send(JSON.stringify({
 			op: 3,
 			d: { 
 				"idle_since": awaytime, 
@@ -326,7 +328,7 @@ class Client extends EventEmitter {
 	}
 	
 	joinVoice(serverID, voiceChannelID) {
-        ws.send(JSON.stringify({
+       this.ws.send(JSON.stringify({
             op: 4,
             d: {
             	"guild_id": serverID,
@@ -341,7 +343,7 @@ class Client extends EventEmitter {
 	}
 
 	leaveVoice() {
-        ws.send(JSON.stringify({
+        this.ws.send(JSON.stringify({
             op: 4,
             d: {
             	"guild_id": "",
@@ -657,9 +659,37 @@ class Client extends EventEmitter {
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("Somehow an error was made!")); });
 	}
+	changeStatus(status, botGame) {
+	    return new Error("DEPRECATED");
+		/*
+		if (botGame !== undefined) {
+			this.game = botGame;
+		}
+		if (status === "idle") {
+		
+		    this.ws.send(JSON.stringify({
+			    op: 3,
+			    d: {
+			    	"status": status,
+			    	"since": Date.now(), 
+			    	"game": {
+			    		"name": `${botGame}`	
+			    	}
+			    }
+    	    }))
+		} else {
+		    this.ws.send(JSON.stringify({
+			    op: 3,
+			    d: {
+			    	"status": status,
+			    	"game": {
+			    		"name": `${botGame}`	
+			    	}
+			    }
+    	    }))
+		}
+		*/
+	}
     
 }
-
-
-ws.on('close', console.log);
 module.exports = Client;
