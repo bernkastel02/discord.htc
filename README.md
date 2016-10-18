@@ -5,7 +5,7 @@
 <a href="https://nodei.co/npm/discord.htc/"><img src="https://nodei.co/npm/discord.htc.png?downloads=true&downloadRank=true&stars=true"></a>
 <br>
 
-<a href="https://www.npmjs.com/package/discord.htc"><img src="https://img.shields.io/npm/v/discord.htc.svg?style=flat-square" alt="npm version" height="18"></a>
+<a href="https://www.npmjs.com/package/discord.htc"><img src="https://img.shields.io/npm/v/discord.htc.svg?style=flat-square" alt="npm version" height="18"></a> <a  href="https://david-dm.org/nekonez/discord.htc"><img src="https://david-dm.org/nekonez/discord.htc.svg" alt="david"></a>
 <br>
 </p>
 
