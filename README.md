@@ -1,9 +1,10 @@
 <p align="center">
     <img src="https://cdn.discordapp.com/attachments/216763379535052801/234375516742746112/Untitled-1.png" alt="discord.htc logo">
 <a href="https://travis-ci.org/nekonez/discord.htc"><img src="https://travis-ci.org/nekonez/discord.htc.svg?branch=master"></a>
+<br>
 <a href="https://nodei.co/npm/discord.htc/"><img src="https://nodei.co/npm/discord.htc.png?downloads=true&downloadRank=true&stars=true"></a>
 <br>
-<a href="https://badge.fury.io/js/discord.htc"><img src="https://badge.fury.io/js/discord.htc.svg" alt="npm version" height="18"></a>
+<a href="https://www.npmjs.com/package/discord.htc"><img src="https://badge.fury.io/js/discord.htc.svg" alt="npm version" height="18"></a>  <a href="https://www.npmjs.com/package/discord.htc"><img src="https://img.shields.io/npm/dt/discord.htc.svg" alt="npm version" height="18"></a>
 
 ##How to install
 
