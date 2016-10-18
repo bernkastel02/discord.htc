@@ -701,6 +701,29 @@ class Client extends EventEmitter {
 		};
 		return requestp(options).then((user) => { return this}).catch(function (err) { return new Promise.reject(new Error("Could not GET user information!")); });
 	}
+    changeSelf(username, avatar) {
+        var base64data;
+        var data = fs.readFileSync(avatar)
+        base64data = new Buffer(data).toString('base64');
+        let HTTPoptions = {
+            method: 'PATCH',
+            uri: `${url}/users/@me`,
+            formData: {
+                "username": username,
+                "avatar": base64data
+            },
+            headers: {
+                'Authorization': `Bot ${this.token}`
+            }
+        };
+        request(HTTPoptions, (err, httpResponse, body) => {
+        	if (err) { 
+        		return new Promise.reject(new Error("Odd error"))
+        	} else {
+        		return Promise.resolve();
+        	}
+        })
+    }
     
 }
 module.exports = Client;
