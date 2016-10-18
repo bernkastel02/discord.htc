@@ -703,18 +703,20 @@ class Client extends EventEmitter {
 	}
     changeSelf(username, avatar) {
         var base64data;
-        var data = fs.readFileSync(avatar)
-        base64data = new Buffer(data).toString('base64');
+        base64data = new Buffer(fs.readFileSync(avatar)).toString('base64');
         let HTTPoptions = {
             method: 'PATCH',
             uri: `${url}/users/@me`,
             formData: {
                 "username": username,
-                "avatar": base64data
+                "avatar": fs.createReadStream(avatar) // i would of used this :eyes:
+                
             },
             headers: {
-                'Authorization': `Bot ${this.token}`
-            }
+                'Authorization': `Bot ${this.token}`,
+        		"Content-Type": "multipart/form-data"
+            },
+            json: true
         };
         request(HTTPoptions, (err, httpResponse, body) => {
         	if (err) { 
