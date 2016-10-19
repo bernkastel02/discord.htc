@@ -8,7 +8,7 @@ bot.on('botReady', () => {
 
 bot.on('createdMessage', (message) => {
   if (message.content.includes("^")) {
-    bot.makeMessage(message.channel_id, 'Yeah! What he said!')
+    bot.makeMessage(message.channel.id, 'Yeah! What he said!')
   }
 })
 

@@ -10,6 +10,9 @@
 </p>
 
 
+## Documentation
+
+
 ##How to install
 
 You will need node.js 4+ to run the library

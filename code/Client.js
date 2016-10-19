@@ -1,6 +1,7 @@
 'use strict';
 const WebSocket = require("ws"), request = require('request'), Zlib = require("zlib"), requestp = require('request-promise-any'), fs = require('fs')
 const dgram = require('dgram');
+const ws = new WebSocket('wss://gateway.discord.gg/?v=6')
 
 
 var EventEmitter, Promise;
@@ -16,6 +17,7 @@ const User = require("./structs/User");
 const Message = require("./structs/Message")
 const Channel = require("./structs/Channel")
 const Guild = require("./structs/Guild")
+const Member = require("./structs/Member")
 const Role = require("./structs/Role")
 const Invite = require("./structs/Invite")
 const VoiceRegion = require("./structs/voice/VoiceRegion");
@@ -45,7 +47,9 @@ class Client extends EventEmitter {
         this.isReady = false;
     	this.game = "";
     	this.startT = 0;
-		this.ws = new WebSocket('wss://gateway.discord.gg/?v=6')
+    	this.users = new Map();
+    	this.guilds = new Map();
+    	this.channels = new Map();
 		
 		request.get({ url: `${url}/gateway?encoding=json&v=6` }).on('response', function(response) {  })
     }
@@ -54,12 +58,12 @@ class Client extends EventEmitter {
      * The Connection client
      */
 	connect() {
-		this.ws.on('open', () => {
+		ws.on('open', () => {
     		
 		});
 		
 		
-		this.ws.on("message", (data, flags) => {
+		ws.on("message", (data, flags) => {
             if (flags.binary)
                 data = Zlib.inflateSync(data).toString();
                 var message = JSON.parse(data);
@@ -69,7 +73,7 @@ class Client extends EventEmitter {
                 } // probs fixed..? commit 3
             switch(message.op) {
                 case 10:
-                    this.ws.send(JSON.stringify({
+                    ws.send(JSON.stringify({
         	            "op": 2,
         	            "d": {
         		            large_theshold: 250,
@@ -85,7 +89,7 @@ class Client extends EventEmitter {
         	            }
                     }))
                     this.heartbeatInterval = setInterval(()=>{
-                        this.ws.send(JSON.stringify({
+                        ws.send(JSON.stringify({
                             op: 1,
                             d: this.sequence
                         }))
@@ -98,11 +102,18 @@ class Client extends EventEmitter {
                     	this.emit("botReady")
                     	this.isReady = true;
                     	this.startT = Date.now();
+                    	this.users.set('1', {
+                    	    username: 'Clyde',
+                    	    discriminator: '0000',
+                    	    id: '1',
+                    	    avatar: 'f78426a064bc9dd24847519259bc42af',
+                    	    bot: true
+                    	})
                     break;
                     
                     case "MESSAGE_CREATE":
-                    	this.emit("createdMessage", message.d)
-                    	this.author = new User(message.d.author);
+                    	this.emit("createdMessage", new Message(this, message.d))
+                    	this.author = new User(this, message.d.author);
                     break;
                     case "MESSAGE_DELETE":
                     	this.emit("deletedMessage", message.d)
@@ -113,14 +124,20 @@ class Client extends EventEmitter {
                     
                     case "GUILD_CREATE":
                     	this.emit("guildAdd", message.d)
-                    	this.guild = new Guild(message.d)
+                    	this.guilds.set(message.d.id, new Guild(this, message.d));
+                    	message.d.channels.forEach(channel => this.channels.set(channel.id, new Channel(this, channel, message.d.id)))
+                    	message.d.members.map(member => member.user).forEach(user => {
+                    	   if (!this.users.has(user.id)) this.users.set(user.id, new User(this, user));
+                    	})
+                    	this.guild = new Guild(this, message.d)
                     break;
                     case "GUILD_UPDATE":
                     	this.emit("guildUpdate", message.d)
-                    	this.guild = new Guild(message.d)
+                    	this.guild = new Guild(this, message.d)
                     break;
                     case "GUILD_DELETE":
                     	this.emit("guildDelete", message.d)
+                    	this.guilds.delete(message.d.id);
                     break;
                     case "GUILD_BAN_ADD":
                     	this.emit("guildBanAdd", message.d)
@@ -130,23 +147,28 @@ class Client extends EventEmitter {
                     break;
                     case "GUILD_ROLE_CREATE":
                     	this.emit("guildRoleCreate", message.d)
-                    	this.role = new Role(message.d.role)
+                    	this.role = new Role(this, message.d.role)
                     break;
                     case "GUILD_ROLE_UPDATE":
                     	this.emit("guildRoleUpdate", message.d)
-                    	this.role = new Role(message.d.role)
+                    	this.role = new Role(this, message.d.role)
                     break;
                     case "GUILD_ROLE_DELETE":
                     	this.emit("guildRoleDelete", message.d)
                 	break;
                 	case "GUILD_MEMBER_ADD":
                 		this.emit("guildMemberJoin", message.d)
+                		if (!this.users.has(message.d.user.id)) this.users.set(message.d.user.id, new Member(message.d));
+                		this.guilds.get(message.d.guild_id).members.set(message.d.user.id, new Member(this, message.d));
                 	break;
                 	case "GUILD_MEMBER_UPDATE":
                 		this.emit("guildMemberUpdate", message.d)
+                		this.guilds.get(message.d.guild_id).members.set(message.d.user.id, new Member(this, message.d));
                 	break;
                 	case "GUILD_MEMBER_REMOVE":
-                		this.emit("guildMemberLeave", message.d)
+                		this.emit("guildMemberLeave", message.d);
+                		this.guilds.get(message.d.guild_id).members.delete(message.d.user.id);
+                		if (this.users.has(message.d.user.id)) this.users.delete(message.d.user.id);
                 	break;
                 		
                 	
@@ -162,7 +184,7 @@ class Client extends EventEmitter {
                 	
                     case "VOICE_SERVER_UPDATE":
                     	this.emit("voiceGuildChange", message.d)
-                    	this.voice = new VoiceServer(message.d)
+                    	this.voice = new VoiceServer(this, message.d)
                     break;
                     
                     case "TYPING_START":
@@ -175,6 +197,10 @@ class Client extends EventEmitter {
                     
                     case "PRESENCE_UPDATE":
                     	this.emit("presenceUpdate", message.d)
+                    break;
+                    case "USER_UPDATE":
+                        this.emit("userUpdate", message.d)
+                        this.users.set(message.d.id, new User(message.d))
                     break;
                     	
                 }
@@ -236,7 +262,7 @@ class Client extends EventEmitter {
 		if (botGame !== undefined) {
 			this.game = botGame;
 		}
-		this.ws.send(JSON.stringify({
+		ws.send(JSON.stringify({
 			op: 3,
 			d: { 
 				"idle_since": awaytime, 
@@ -328,7 +354,7 @@ class Client extends EventEmitter {
 	}
 	
 	joinVoice(serverID, voiceChannelID) {
-       this.ws.send(JSON.stringify({
+       ws.send(JSON.stringify({
             op: 4,
             d: {
             	"guild_id": serverID,
@@ -343,7 +369,7 @@ class Client extends EventEmitter {
 	}
 
 	leaveVoice() {
-        this.ws.send(JSON.stringify({
+        ws.send(JSON.stringify({
             op: 4,
             d: {
             	"guild_id": "",
@@ -660,35 +686,17 @@ class Client extends EventEmitter {
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("Somehow an error was made!")); });
 	}
 	changeStatus(status, botGame) {
-	    return new Error("DEPRECATED");
-		/*
-		if (botGame !== undefined) {
-			this.game = botGame;
-		}
-		if (status === "idle") {
-		
-		    this.ws.send(JSON.stringify({
-			    op: 3,
-			    d: {
-			    	"status": status,
-			    	"since": Date.now(), 
-			    	"game": {
-			    		"name": `${botGame}`	
-			    	}
-			    }
-    	    }))
-		} else {
-		    this.ws.send(JSON.stringify({
-			    op: 3,
-			    d: {
-			    	"status": status,
-			    	"game": {
-			    		"name": `${botGame}`	
-			    	}
-			    }
-    	    }))
-		}
-		*/
+	    ws.send(JSON.stringify({
+		    op: 3,
+		    d: {
+		    	"status": status,
+		    	"since": (status === 'idle') ? Date.now() : 0,
+		    	"game": {
+		    	    "name": botGame
+		    	},
+		    	"afk": status === 'idle'
+		    }
+        }))
 	}
 	
 	get self() {
@@ -702,23 +710,19 @@ class Client extends EventEmitter {
 		return requestp(options).then((user) => { return this}).catch(function (err) { return new Promise.reject(new Error("Could not GET user information!")); });
 	}
     changeSelf(username, avatar) {
-        var base64data;
-        base64data = new Buffer(fs.readFileSync(avatar)).toString('base64');
-        let HTTPoptions = {
-            method: 'PATCH',
+        var base64data = new Buffer(fs.readFileSync(avatar)).toString('base64');
+        let HTTPSoptions = {
             uri: `${url}/users/@me`,
-            formData: {
+            body: {
                 "username": username,
-                "avatar": fs.createReadStream(avatar) // i would of used this :eyes:
-                
+                "avatar": `data:image/jpeg;base64,${base64data}` // i would of used this :eyes:
             },
             headers: {
-                'Authorization': `Bot ${this.token}`,
-        		"Content-Type": "multipart/form-data"
+                'Authorization': `Bot ${this.token}`
             },
-            json: true
+            json: true // works for PATCH too
         };
-        request(HTTPoptions, (err, httpResponse, body) => {
+        request.patch(HTTPSoptions, (err, httpResponse, body) => {
         	if (err) { 
         		return new Promise.reject(new Error("Odd error"))
         	} else {
@@ -728,4 +732,6 @@ class Client extends EventEmitter {
     }
     
 }
+
+ws.on('close', console.log);
 module.exports = Client;

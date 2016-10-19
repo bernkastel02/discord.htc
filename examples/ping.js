@@ -6,13 +6,9 @@ bot.on('botReady', () => {
   console.log('Ready!')
 })
 
-bot.on("presenceUpdate", (update) => {
-    console.log(update)
-});
-
 bot.on('createdMessage', (message) => {
   if (message.content.startsWith(`${prefix}ping`)) {
-    bot.makeMessage(message.channel_id, 'Pong!')
+    bot.makeMessage(message.channel.id, 'Pong!')
   }
 })
 

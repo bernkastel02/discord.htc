@@ -1,5 +1,8 @@
 "use strict";
 
+const Member = require('./Member');
+const Channel = require('./Channel');
+
 /**
 * @prop {String} id The Guild ID
 * @prop {String} name The Guild Name
@@ -11,14 +14,20 @@
 */
 
 class Guild {
-    constructor(data) {
+    constructor(client, data) {
         this.id = data.id;
         this.name = data.name;
         this.icon = data.icon;
         this.region = data.region;
-        this.owner_id = data.owner_id;
         this.roles = data.roles;
-        this.emojis = data.emojis
+        this.emojis = data.emojis;
+        this.channels = new Map(data.channels.map(channel => [channel.id, new Channel(client, channel)]));
+        this.members = new Map(data.members.map(member => [member.user.id, new Member(client, member)]));
+        this.owner = this.members.get(data.owner_id).user;
+    }
+    
+    get iconURI() {
+        return `https://cdn.discordapp.com/icons/${this.id}/${this.icon}.jpg`
     }
 }
 

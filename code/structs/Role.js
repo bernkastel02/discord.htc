@@ -1,7 +1,7 @@
 "use strict";
 
 class Role {
-    constructor(data) {
+    constructor(client, data) {
         this.id = data.id
         this.name = data.name
         this.color = data.color

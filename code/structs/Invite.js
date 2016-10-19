@@ -1,7 +1,7 @@
 "use strict";
 
 class Invite {
-    constructor(data) {
+    constructor(client, data) {
         this.code = data.code
         this.guild = data.guild
         this.channel = data.channel

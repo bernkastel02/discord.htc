@@ -5,9 +5,11 @@
 */
 
 class Channel {
-    constructor(data) {
+    constructor(client, data, guild_id) {
         this.id = data.id;
-        this.channelType = data.type;
+        this.channelType = this.type = data.type;
+        this.name = data.name;
+        this.guild = client.guilds.get(guild_id);
     }
 }
 

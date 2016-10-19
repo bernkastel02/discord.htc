@@ -8,11 +8,12 @@
 * @prop {Boolean} bot Determines whether the user is a bot or not (true or false)
 */
 class User {
-    constructor(data) {
+    constructor(client, data) {
         this.id = data.id;
-        this.username = data.useraname;
-        this.discriminator = data.discriminator;
+        this.username = this.name = data.username;
+        this.discriminator = this.discrim = data.discriminator;
         this.avatar = data.avatar;
+        this.avatarURL = (data.avatar === 'f78426a064bc9dd24847519259bc42af') ? `https://discordapp.com/assets/${data.avatar}.png` : `https://cdn.discordapp.com/avatars/${data.id}/${data.avatar}.jpg`;
         this.bot = data.bot;
     }
     
