@@ -10,7 +10,7 @@
 </p>
 
 
-## Documentation
+## [Documentation](https://github.com/nekonez/discord.htc/wiki)
 
 
 ##How to install
