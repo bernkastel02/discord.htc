@@ -1,6 +1,6 @@
 var DHTC = require('discord.htc');
 
-/* MADE FOR discord.htc 0.2.0
+/* MADE FOR discord.htc 0.2.0 */
 
 var prefix = "!"
 var ownerID = " "
