@@ -7,10 +7,10 @@ const User = require('./User');
 */
 
 class DMChannel {
-    constructor(client, data) {
+    constructor(data) {
         this.id = data.id;
         this.channelType = this.type = data.type;
-        this.recipient = new User(client, data.user);
+        this.recipient = new User(data.user);
         this.isPrivate = data.is_private;
     }
 }

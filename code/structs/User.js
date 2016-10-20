@@ -8,7 +8,7 @@
 * @prop {Boolean} bot Determines whether the user is a bot or not (true or false)
 */
 class User {
-    constructor(client, data) {
+    constructor(data) {
         this.id = data.id;
         this.username = this.name = data.username;
         this.discriminator = this.discrim = data.discriminator;

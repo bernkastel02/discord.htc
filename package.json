@@ -1,6 +1,6 @@
 {
   "name": "discord.htc",
-  "version": "0.1.26",
+  "version": "0.2.0",
   "description": "A JavaScript Handler made for Discord utilizing its API",
   "main": "index.js",
   "scripts": {
@@ -22,6 +22,7 @@
   "dependencies": {
     "bluebird": "^3.4.6",
     "eventemitter3": "^2.0.2",
+    "opusscript": "0.0.1",
     "request": "^2.75.0",
     "request-promise-any": "^1.0.3",
     "ws": "^1.1.1"

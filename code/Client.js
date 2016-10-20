@@ -1,5 +1,5 @@
 'use strict';
-const WebSocket = require("ws"), request = require('request'), Zlib = require("zlib"), requestp = require('request-promise-any'), fs = require('fs')
+const WebSocket = require("ws"), request = require('request'), Zlib = require("zlib"), requestp = require('request-promise-any'), fs = require('fs'), opusscript = require("opusscript");
 const dgram = require('dgram');
 const ws = new WebSocket('wss://gateway.discord.gg/?v=6')
 
@@ -42,28 +42,14 @@ class Client extends EventEmitter {
 	*	@arg {String} token
 	*	@returns {Client} Client object
 	*/
-    constructor(token, options) {
+    constructor(token, options = {}) {
         super();
 
         if (!token) { return "There are no tokens used for this client!" }
         
-    /*  if (token instanceof Array && token.length > 1)
-            request.post({
-                uri: `${url}/api/login`,
-                body: {
-                    email: token[0],
-                    password: token[1]
-                },
-                json: true
-            }, function(err, req, body) {
-                this.token = body.token;
-            });
-        else
-    */      this.token = token;
+        this.token = token;
         
-        this.options = {
-            
-        }
+        this.options = options;
         
         this.isReady = false;
     	this.game = "";
@@ -185,7 +171,7 @@ class Client extends EventEmitter {
                 	break;
                 	case "GUILD_MEMBER_UPDATE":
                 		this.emit("guildMemberUpdate", message.d)
-                		this.guilds.get(message.d.guild_id).members.set(message.d.user.id, new Member(this, message.d));
+                		this.guilds.get(message.d.guild_id).members.set(message.d.user.id, new Member(message.d));
                 	break;
                 	case "GUILD_MEMBER_REMOVE":
                 		this.emit("guildMemberLeave", message.d);
@@ -222,7 +208,7 @@ class Client extends EventEmitter {
                     break;
                     case "USER_UPDATE":
                         this.emit("userUpdate", message.d)
-                        this.users.set(message.d.id, new User(this, message.d))
+                        this.users.set(message.d.id, new User(message.d))
                     break;
                     	
                 }

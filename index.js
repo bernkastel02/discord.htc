@@ -27,4 +27,10 @@ DHTC.Role = Role;
 DHTC.Invite = Invite;
 DHTC.Constants = Constants;
 
+/* EXTENSIONS */
+
+const Base = require("./code/extensions/BotBase");
+
+DHTC.BotBase = Base;
+
 module.exports = DHTC;
