@@ -14,14 +14,18 @@ try {
 var url = ("https://discordapp.com/api")
 
 const User = require("./structs/User");
+const BotUser = require("./structs/BotUser");
 const Message = require("./structs/Message")
 const Channel = require("./structs/Channel")
+const DirectMessage = require("./structs/DirectMessage")
+const DMChannel = require("./structs/DMChannel")
 const Guild = require("./structs/Guild")
 const Member = require("./structs/Member")
 const Role = require("./structs/Role")
 const Invite = require("./structs/Invite")
 const VoiceRegion = require("./structs/voice/VoiceRegion");
 const VoiceServer = require("./structs/voice/VoiceServer");
+const Constants = require("./Consts")
 
 
 /**
@@ -38,12 +42,29 @@ class Client extends EventEmitter {
 	*	@arg {String} token
 	*	@returns {Client} Client object
 	*/
-    constructor(token) {
+    constructor(token, options) {
         super();
-        
+
         if (!token) { return "There are no tokens used for this client!" }
         
-        this.token = token;
+    /*  if (token instanceof Array && token.length > 1)
+            request.post({
+                uri: `${url}/api/login`,
+                body: {
+                    email: token[0],
+                    password: token[1]
+                },
+                json: true
+            }, function(err, req, body) {
+                this.token = body.token;
+            });
+        else
+    */      this.token = token;
+        
+        this.options = {
+            
+        }
+        
         this.isReady = false;
     	this.game = "";
     	this.startT = 0;
@@ -99,21 +120,22 @@ class Client extends EventEmitter {
                 case 0:
                     switch(message.t) {
                     case "READY":
-                    	this.emit("botReady")
                     	this.isReady = true;
                     	this.startT = Date.now();
+                    	this.self = new BotUser(this, message.d.user);
+                    	if (this.self.bot && !this.token.startsWith('Bot ')) this.token = `Bot ${this.token}`;
                     	this.users.set('1', {
                     	    username: 'Clyde',
                     	    discriminator: '0000',
                     	    id: '1',
                     	    avatar: 'f78426a064bc9dd24847519259bc42af',
                     	    bot: true
-                    	})
+                    	});
+                    	this.emit("botReady");
                     break;
                     
                     case "MESSAGE_CREATE":
                     	this.emit("createdMessage", new Message(this, message.d))
-                    	this.author = new User(this, message.d.author);
                     break;
                     case "MESSAGE_DELETE":
                     	this.emit("deletedMessage", message.d)
@@ -158,7 +180,7 @@ class Client extends EventEmitter {
                 	break;
                 	case "GUILD_MEMBER_ADD":
                 		this.emit("guildMemberJoin", message.d)
-                		if (!this.users.has(message.d.user.id)) this.users.set(message.d.user.id, new Member(message.d));
+                		if (!this.users.has(message.d.user.id)) this.users.set(message.d.user.id, new Member(this, message.d));
                 		this.guilds.get(message.d.guild_id).members.set(message.d.user.id, new Member(this, message.d));
                 	break;
                 	case "GUILD_MEMBER_UPDATE":
@@ -173,13 +195,13 @@ class Client extends EventEmitter {
                 		
                 	
                 	case "CHANNEL_CREATE":
-                		this.emit("channelCreate", message.d)
+                        this.emit('channelCreate', new Channel(this, message.d));
                 	break;
                 	case "CHANNEL_UPDATE":
-                		this.emit("channelUpdate", message.d)
+                		this.emit("channelUpdate", new Channel(this, message.d))
                 	break;
                 	case "CHANNEL_DELETE":
-                		this.emit("channelDelete", message.d)
+                		this.emit("channelDelete", message.d);
                 	break;
                 	
                     case "VOICE_SERVER_UPDATE":
@@ -200,7 +222,7 @@ class Client extends EventEmitter {
                     break;
                     case "USER_UPDATE":
                         this.emit("userUpdate", message.d)
-                        this.users.set(message.d.id, new User(message.d))
+                        this.users.set(message.d.id, new User(this, message.d))
                     break;
                     	
                 }
@@ -231,7 +253,7 @@ class Client extends EventEmitter {
         		'content': `${content}`
     		},
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};
 		return requestp(options).then((message) => { new Message(message, this) }).catch(function (err) { return new Promise.reject(new Error("You don't have permission in channel to Send Message")) });
@@ -248,7 +270,7 @@ class Client extends EventEmitter {
     		method: 'DELETE',
 			uri: `${url}/channels/${channelID}/messages/${messageID}`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission in channel to Delete Message")); });
@@ -289,7 +311,7 @@ class Client extends EventEmitter {
 				"type": `${chantype}`
 			},
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		},
     		json: true // Automatically stringifies the body to JSON
 		};
@@ -305,7 +327,7 @@ class Client extends EventEmitter {
     		method: 'POST',
 			uri: `${url}/guilds/${serverID}/roles`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission to create role!")); });
@@ -324,7 +346,7 @@ class Client extends EventEmitter {
                 "mentionable": roleMention
             },
             headers: {
-                'Authorization': `Bot ${this.token}`
+                'Authorization': this.token
             },
             json: true
         };
@@ -347,7 +369,7 @@ class Client extends EventEmitter {
     		method: 'DELETE',
 			uri: `${url}/guilds/${serverID}/roles/${roleID}`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission to delete role!")); });
@@ -389,18 +411,18 @@ class Client extends EventEmitter {
 				"icon": icon
 			},
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission to create guild!")); });
 	}	
 	
-	removeUser(serverID, userID) {
+	snipMember(serverID, userID) {
 		let options = {
     		method: 'DELETE',
 			uri: `${url}/guilds/${serverID}/members/${userID}`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission to kick this user!!")); });
@@ -414,7 +436,7 @@ class Client extends EventEmitter {
                 "content": content
             },
             headers: {
-                'Authorization': `Bot ${this.token}`
+                'Authorization': this.token
             },
             json: true
         };
@@ -432,7 +454,7 @@ class Client extends EventEmitter {
     		method: 'DELETE',
 			uri: `${url}/channels/${channelID}`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission to delete this channel!!")); });
@@ -454,7 +476,7 @@ class Client extends EventEmitter {
                 tts: 'false'
             },
     		headers: {
-        		'Authorization': `Bot ${this.token}`,
+        		'Authorization': this.token,
         		"Content-Type": "multipart/form-data"
     		}
 		};
@@ -472,7 +494,7 @@ class Client extends EventEmitter {
 				"unique": true
 			},
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		},
     		json: true
 		};
@@ -484,7 +506,7 @@ class Client extends EventEmitter {
     		method: 'DELETE',
 			uri: `${url}/invites/${invitecode}`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission to delete this invite!!")); });
@@ -495,7 +517,7 @@ class Client extends EventEmitter {
     		method: 'POST',
 			uri: `${url}/channels/${channelID}/typing`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};
 		return requestp(options)	
@@ -509,7 +531,7 @@ class Client extends EventEmitter {
                 "channel_id": channelID
             },
             headers: {
-                'Authorization': `Bot ${this.token}`
+                'Authorization': this.token
             },
             json: true
         };
@@ -527,7 +549,7 @@ class Client extends EventEmitter {
     		method: 'GET',
 			uri: `${url}/invites/${invitecode}`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	// return new Promise.reject(new Error("You don't have test invite!"));
 		return requestp(options).then((invite) => { return invite; }).catch(function (err) { return new Promise.reject(new Error("You don't have test invite!")); });
@@ -538,7 +560,7 @@ class Client extends EventEmitter {
     		method: 'GET',
 			uri: `${url}/guilds/${serverID}/invites`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	// return new Promise.reject(new Error("You don't have test invite!"));
 		return requestp(options).then((inviteArray) => { return inviteArray; }).catch(function (err) { return new Promise.reject(new Error("You don't have test invites")); });
@@ -548,40 +570,29 @@ class Client extends EventEmitter {
     		method: 'GET',
 			uri: `${url}/guilds/${serverID}/bans`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	// return new Promise.reject(new Error("You don't have test invite!"));
 		return requestp(options).then((userArray) => { return userArray; }).catch(function (err) { return new Promise.reject(new Error("You don't have test bans")); });
 	}
 	
-	getGuildRoles(serverID) {
-		let options = {
-    		method: 'GET',
-			uri: `${url}/guilds/${serverID}/roles`,
-    		headers: {
-        		'Authorization': `Bot ${this.token}`
-    		}
-		};	// return new Promise.reject(new Error("You don't have test invite!"));
-		return requestp(options).then((roleArray) => { return roleArray; }).catch(function (err) { return new Promise.reject(new Error("You don't have test roles!")); });
-	}
-	
-	unbanUser(serverID, userID) {
+	unbanMember(serverID, userID) {
 		let options = {
     		method: 'DELETE',
 			uri: `${url}/guilds/${serverID}/bans/${userID}`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission to unban user")); });
 	}
 	
-	banUser(serverID, userID) {
+	banMember(serverID, userID) {
         let HTTPoptions = {
             method: 'PUT',
             uri: `${url}/guilds/${serverID}/bans/${userID}`,
             headers: {
-                'Authorization': `Bot ${this.token}`
+                'Authorization': this.token
             },
             json: true
         };
@@ -592,17 +603,6 @@ class Client extends EventEmitter {
         		return new Promise.resolve('wss://gateway.discord.gg/');
         	}
         })	
-	}
-
-	getChannel(channelID) {
-		let options = {
-    		method: 'GET',
-			uri: `${url}/channels/${channelID}`,
-    		headers: {
-        		'Authorization': `Bot ${this.token}`
-    		}
-		};	
-		return requestp(options).then((channel) => { return channel; }).catch(function (err) { return new Promise.reject(new Error("You don't have test channel")); });
 	}
 	
     changeGuild(serverID, name, region, icon, owner_id) {
@@ -616,7 +616,7 @@ class Client extends EventEmitter {
                 "owner_id": owner_id
             },
             headers: {
-                'Authorization': `Bot ${this.token}`
+                'Authorization': this.token
             },
             json: true
         };
@@ -629,22 +629,12 @@ class Client extends EventEmitter {
         })
     }
     
-	getGuild(serverID) {
-		let options = {
-    		method: 'GET',
-			uri: `${url}/guilds/${serverID}`,
-    		headers: {
-        		'Authorization': `Bot ${this.token}`
-    		}
-		};	
-		return requestp(options).then((guild) => { return guild; }).catch(function (err) { return new Promise.reject(new Error("You don't have test channel")); });
-	}
 	snipGuild(serverID) {
 		let options = {
     		method: 'DELETE',
 			uri: `${url}/guilds/${serverID}`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("You don't have permission to delete this guild!!")); });
@@ -662,7 +652,7 @@ class Client extends EventEmitter {
             	"user_limit": user_limit
             },
             headers: {
-                'Authorization': `Bot ${this.token}`
+                'Authorization': this.token
             },
             json: true
         };
@@ -680,7 +670,7 @@ class Client extends EventEmitter {
     		method: 'DELETE',
 			uri: `${url}/users/@me/guilds/${serverID}`,
     		headers: {
-        		'Authorization': `Bot ${this.token}`
+        		'Authorization': this.token
     		}
 		};	
 		return requestp(options).catch(function (err) { return new Promise.reject(new Error("Somehow an error was made!")); });
@@ -698,17 +688,7 @@ class Client extends EventEmitter {
 		    }
         }))
 	}
-	
-	get self() {
-		let options = {
-    		method: 'GET',
-			uri: `${url}/users/@me`,
-    		headers: {
-        		'Authorization': `Bot ${this.token}`
-    		}
-		};
-		return requestp(options).then((user) => { return this}).catch(function (err) { return new Promise.reject(new Error("Could not GET user information!")); });
-	}
+
     changeSelf(username, avatar) {
         var base64data = new Buffer(fs.readFileSync(avatar)).toString('base64');
         let HTTPSoptions = {
@@ -718,7 +698,7 @@ class Client extends EventEmitter {
                 "avatar": `data:image/jpeg;base64,${base64data}` // i would of used this :eyes:
             },
             headers: {
-                'Authorization': `Bot ${this.token}`
+                'Authorization': this.token
             },
             json: true // works for PATCH too
         };
@@ -730,6 +710,40 @@ class Client extends EventEmitter {
         	}
         })
     }
+	pinMessage(channelID, messageID) {
+        let HTTPoptions = {
+            method: 'PUT',
+            uri: Constants.API_URL + Constants.RESTPoints.Pinned(channelID, messageID),
+            headers: {
+                'Authorization': this.token
+            },
+            json: true
+        };
+        request(HTTPoptions, (err, httpResponse, body) => {
+        	if (err) { 
+        		return new Promise.reject(new Error("Could not pin message!"))
+        	} else {
+        		return new Promise.resolve('wss://gateway.discord.gg/');
+        	}
+        })	
+	}
+	unpinMessage(channelID, messageID) {
+        let HTTPoptions = {
+            method: 'DELETE',
+            uri: Constants.API_URL + Constants.RESTPoints.Pinned(channelID, messageID),
+            headers: {
+                'Authorization': this.token
+            },
+            json: true
+        };
+        request(HTTPoptions, (err, httpResponse, body) => {
+        	if (err) { 
+        		return new Promise.reject(new Error("Could not unpin message!"))
+        	} else {
+        		return new Promise.resolve('wss://gateway.discord.gg/');
+        	}
+        })	
+	}
     
 }
 

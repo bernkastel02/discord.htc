@@ -14,6 +14,7 @@ const VoiceRegion = require("./code/structs/voice/VoiceRegion");
 const VoiceServer = require("./code/structs/voice/VoiceServer");
 const Role = require("./code/structs/Role");
 const Invite = require("./code/structs/Invite");
+const Constants = require("./code/Consts")
 
 DHTC.Client = Client;
 DHTC.Message = Message;
@@ -24,5 +25,6 @@ DHTC.VoiceRegion = VoiceRegion;
 DHTC.VoiceServer = VoiceServer;
 DHTC.Role = Role;
 DHTC.Invite = Invite;
+DHTC.Constants = Constants;
 
 module.exports = DHTC;

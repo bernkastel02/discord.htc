@@ -10,12 +10,13 @@ const User = require('./User');
 * @prop {Boolean} bot Determines whether the member is a bot or not (true or false)
 */
 class Member {
-    constructor(client, data) {
+    constructor(client, data, guild_id) {
         this.nick = this.nickname = data.nick;
         this.id = data.user.id;
         this.username = this.name = data.user.username;
         this.discriminator = this.discrim = data.discriminator;
         this.avatar = data.user.avatar;
+        this.roles = data.roles;
         this.bot = data.user.bot;
         this.user = new User(client, data.user);
     }
