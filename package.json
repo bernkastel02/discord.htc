@@ -1,6 +1,6 @@
 {
   "name": "discord.htc",
-  "version": "0.1.24",
+  "version": "0.1.25",
   "description": "A JavaScript Handler made for Discord utilizing its API",
   "main": "index.js",
   "scripts": {
