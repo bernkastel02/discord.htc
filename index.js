@@ -1,20 +1,20 @@
 'use strict';
-const Client = require("./code/Client");
+const Client = require("./lib/Client");
 
 function DHTC(token) {
 	return new Client(token)
 	/* discord.htc Client Passer */
 }
 
-const Message = require("./code/structs/Message");
-const User = require("./code/structs/User");
-const Channel = require("./code/structs/Channel");
-const Guild = require("./code/structs/Guild");
-const VoiceRegion = require("./code/structs/voice/VoiceRegion");
-const VoiceServer = require("./code/structs/voice/VoiceServer");
-const Role = require("./code/structs/Role");
-const Invite = require("./code/structs/Invite");
-const Constants = require("./code/Consts")
+const Message = require("./lib/structs/Message");
+const User = require("./lib/structs/User");
+const Channel = require("./lib/structs/Channel");
+const Guild = require("./lib/structs/Guild");
+const VoiceRegion = require("./lib/structs/voice/VoiceRegion");
+const VoiceServer = require("./lib/structs/voice/VoiceServer");
+const Role = require("./lib/structs/Role");
+const Invite = require("./lib/structs/Invite");
+const Constants = require("./lib/Consts")
 
 DHTC.Client = Client;
 DHTC.Message = Message;
@@ -29,7 +29,7 @@ DHTC.Constants = Constants;
 
 /* EXTENSIONS */
 
-const Base = require("./code/extensions/BotBase");
+const Base = require("./lib/extensions/BotBase");
 
 DHTC.BotBase = Base;
 
