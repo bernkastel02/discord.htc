@@ -27,6 +27,12 @@ DHTC.Role = Role;
 DHTC.Invite = Invite;
 DHTC.Constants = Constants;
 
+/* HANDLERS */
+
+const HTTPHandler = require("./lib/handlers/HTTPHandler")
+
+DHTC.HTTPHandler = HTTPHandler;
+
 /* EXTENSIONS */
 
 const Base = require("./lib/extensions/BotBase");
