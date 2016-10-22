@@ -4,6 +4,6 @@ node_js:
   - "6.1"
 install:
   - npm install -g codecov
+  - npm install
 script:
-  - istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec
   - codecov
