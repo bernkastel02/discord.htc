@@ -13,12 +13,12 @@
 ## [Documentation](https://github.com/nekonez/discord.htc/wiki)
 
 
-##How to install
+## How to install
 
 You will need node.js 4+ to run the library
 
 
-####NPM Install Command
+#### NPM Install Command
 
 ```
 npm install discord.htc
@@ -30,7 +30,7 @@ or saving to your `package.json`...
 npm install --save discord.htc
 ```
 
-###Ping Example
+### Ping Example
 
 ```js
 const DHTC = require('discord.htc')
@@ -50,10 +50,10 @@ bot.on('createdMessage', (message) => {
 bot.connect()
 ```
 
-##Discord Server
+## Discord Server
 
 https://discord.gg/hbKjYTu
 
-##NPM Package
+## NPM Package
 
 https://www.npmjs.com/package/discord.htc
